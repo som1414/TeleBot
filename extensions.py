@@ -1,6 +1,6 @@
 import requests
 import json
-from config import keys
+from config import currencies
 
 
 class APIException(Exception):
@@ -15,22 +15,22 @@ class CurrencyConverter:
             raise APIException('Невозможно перевести валюту саму в себя')
 
         try:
-            original_ticker = keys[original]
+            original_key = currencies[original.lower()]
         except KeyError:
-            raise APIException(f'Не удалось обработать валюту {original}')
+            raise APIException(f'Валюта {original} не найдена')
 
         try:
-            result_ticker = keys[result]
+            result_key = currencies[result.lower()]
         except KeyError:
-            raise APIException(f'Не удалось обработать валюту {result}')
+            raise APIException(f'Валюта {result} не найдена')
 
         try:
             quantity = float(quantity)
         except ValueError:
-            raise APIException(f'Не удалось обработать колличество валюты {quantity}')
+            raise APIException(f'Не удалось обработать колличество валюты "{quantity}"')
 
         r = requests.get(
-            f'https://free.currconv.com/api/v7/convert?q={original_ticker}_{result_ticker}&compact=ultra&apiKey=609590f5ef6ff491184c')
-        coast = json.loads(r.content)[f'{keys[original]}_{keys[result]}'] * quantity
-
-        return coast
+            f'https://free.currconv.com/api/v7/convert?q={original_key}_{result_key}&compact=ultra&apiKey=609590f5ef6ff491184c')
+        coast = round(json.loads(r.content)[f'{original_key}_{result_key}'] * quantity, 2)
+        answer = f'Стоимость {quantity} {original} в {result} : {coast}'
+        return answer

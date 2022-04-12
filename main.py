@@ -1,5 +1,5 @@
 import telebot
-from config import keys, TOKEN
+from config import currencies, TOKEN
 from extensions import APIException, CurrencyConverter
 
 bot = telebot.TeleBot(TOKEN)
@@ -16,7 +16,7 @@ def handle_start_help(message: telebot.types.Message):
 @bot.message_handler(commands=['values'])
 def values(message: telebot.types.Message):
     text = 'Доступные валюты:'
-    for key in keys.keys():
+    for key in currencies.keys():
         text = '\n'.join((text, key))
     bot.reply_to(message, text)
 
@@ -27,17 +27,15 @@ def convert(message: telebot.types.Message):
         values = message.text.split(' ')
 
         if len(values) != 3:
-            raise APIException('Не соответствует колличество параметров')
+            raise APIException('Неверное колличество параметров')
 
-        original, result, quantity = values
-        coast = CurrencyConverter.get_price(original, result, quantity)
+        answer = CurrencyConverter.get_price(*values)
     except APIException as e:
-        bot.reply_to(message, f'Ошибка пользователя\n{e}')
+        bot.reply_to(message, f'Ошибка в запросе\n{e}')
     except Exception as e:
-        bot.reply_to(message, f'Не удалось обработать запрос\n{e}')
+        bot.reply_to(message, f'Неизвестная ошибка\n{e}')
     else:
-        text = f'Стоимость {quantity} {original} в {result} - {coast}'
-        bot.send_message(message.chat.id, text)
+        bot.send_message(message.chat.id, answer)
 
 
 bot.polling()
