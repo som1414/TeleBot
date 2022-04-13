@@ -11,9 +11,6 @@ class CurrencyConverter:
     @staticmethod
     def get_price(original: str, result: str, quantity: str):
 
-        if original == result:
-            raise APIException('Невозможно перевести валюту саму в себя')
-
         try:
             original_key = currencies[original.lower()]
         except KeyError:
@@ -23,6 +20,9 @@ class CurrencyConverter:
             result_key = currencies[result.lower()]
         except KeyError:
             raise APIException(f'Валюта {result} не найдена')
+
+        if original == result:
+            raise APIException('Невозможно перевести валюту саму в себя')
 
         try:
             quantity = float(quantity)
